@@ -65,3 +65,25 @@ test("expired: patience of 150 s overall", () => {
   assert.equal(Logic.expired(0, 149000), false);
   assert.equal(Logic.expired(0, 151000), true);
 });
+
+test("cardModel: a restricted section without a URL is a static card with the Private badge", () => {
+  // The shape GET /me returns for a private project that has no link (neutral example text).
+  const section = {
+    id: "example",
+    title: "EXAMPLE",
+    badge: "private",
+    visibility: "restricted",
+    summary: "A short description.",
+    url: null,
+    link_label: null,
+  };
+  assert.deepEqual(Logic.cardModel(section), {
+    id: "example",
+    title: "EXAMPLE",
+    badge: "private",
+    badgeLabel: "Private",
+    summary: "A short description.",
+    href: null, // no link: the DOM layer draws a non-clickable card
+    linkLabel: "Open",
+  });
+});
