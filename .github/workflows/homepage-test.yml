@@ -1,0 +1,21 @@
+name: homepage-test
+
+# Node tests of the public start page (logic of homepage/login.js, static page properties). No
+# dependencies, no network. Runs on every push that touches the page or the tests.
+on:
+  push:
+    paths:
+      - 'homepage/**'
+      - 'tests/**'
+      - '.github/workflows/homepage-test.yml'
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test tests

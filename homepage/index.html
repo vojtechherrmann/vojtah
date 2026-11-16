@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>vojtah.cz</title>
+  <meta name="description" content="Small projects by Vojta H.">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ff2a55'/%3E%3Cpath d='M9 22V10h3v12zM14 22V10h3.5c2.6 0 4 1.2 4 3.2 0 1.4-.8 2.4-2 2.8 1.5.3 2.5 1.4 2.5 3 0 2.1-1.5 3-4.2 3z' fill='%230f0f0e'/%3E%3C/svg%3E">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.vojtah.cz https://inbody.vojtah.cz; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="site-api" content="https://api.vojtah.cz">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <div class="top">
+      <h1 class="site">vojtah<span>.cz</span></h1>
+      <div class="account" id="account" hidden>
+        <button type="button" class="linkbtn" id="signin">Sign in</button>
+        <span id="whoami" hidden><span id="who"></span> &middot; <button type="button" class="linkbtn" id="signout">Sign out</button></span>
+      </div>
+    </div>
+    <p class="warm" id="account-status" role="status" aria-live="polite" hidden></p>
+    <ul class="cards">
+      <li>
+        <a class="card" href="https://inbody.vojtah.cz/" data-warm="https://inbody.vojtah.cz/healthz">
+          <span class="pill semi">Semi-public</span>
+          <span class="brand"><b>InBody</b> <span>Aggregator</span></span>
+          <p>Follow your InBody body-composition results over time and share them with friends or trainers. Look around as a guest, no sign-in needed.</p>
+          <span class="go">Open <span aria-hidden="true">→</span></span>
+          <span class="warm" role="status" aria-live="polite" hidden>The app is starting up. Please wait, this can take up to 60&nbsp;seconds.</span>
+        </a>
+      </li>
+      <li data-section="cimrmani">
+        <a class="card" href="cimrmani/">
+          <span class="pill request">On request</span>
+          <span class="name">CIMRMANI</span>
+          <p>An optimized bot that autonomously buys the best available seats for DJC.</p>
+          <span class="go">Details <span aria-hidden="true">→</span></span>
+        </a>
+      </li>
+      <li data-section="euforie">
+        <a class="card" href="euforie/">
+          <span class="pill request">On request</span>
+          <span class="name">EUFORIE</span>
+          <p>Scripts that bypass a bug that blocks you from signing up for group lessons once you have a gym membership at euforie.cz.</p>
+          <span class="go">Details <span aria-hidden="true">→</span></span>
+        </a>
+      </li>
+    </ul>
+    <ul class="cards" id="extra-cards" aria-label="Your projects" hidden></ul>
+    <section class="legend" aria-label="What the labels mean">
+      <p><span class="pill public">Public</span> open to everyone.</p>
+      <p><span class="pill semi">Semi-public</span> anyone can look around; signing in is by invitation.</p>
+      <p><span class="pill request">On request</span> not public; get in touch and I will tell you more.</p>
+    </section>
+    <footer class="foot">&copy; 2026 <a href="mailto:herrmann.vojtech@gmail.com">VojtaH</a> · <a href="https://github.com/vojtechherrmann/vojtah" rel="noopener">GitHub</a></footer>
+  </main>
+  <dialog id="login-dialog" aria-labelledby="login-title">
+    <form id="login-form" autocomplete="on">
+      <h2 id="login-title">Sign in</h2>
+      <label for="login-user">Username</label>
+      <input id="login-user" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64" required>
+      <label for="login-pass">Password</label>
+      <input id="login-pass" name="password" type="password" autocomplete="current-password" maxlength="1024" required>
+      <p class="warm" id="login-status" role="status" aria-live="polite" hidden></p>
+      <p class="err" id="login-error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="submit" class="btn" id="login-submit">Sign in</button>
+        <button type="button" class="linkbtn" id="login-cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="script.js" defer></script>
+  <script src="login.js" defer></script>
+</body>
+</html>

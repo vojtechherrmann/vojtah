@@ -1,0 +1,26 @@
+# Publish homepage/ (the vojtah.cz start page) to GitHub Pages. Manual, like web-bpd.yml.
+# One-time: Settings > Pages > Source = "GitHub Actions"; DNS in homepage/README.md.
+name: homepage-pages
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: homepage
+      - id: deployment
+        uses: actions/deploy-pages@v4
