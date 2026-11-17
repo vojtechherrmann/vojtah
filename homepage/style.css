@@ -15,7 +15,7 @@ main { max-width: 640px; margin: 0 auto; padding: 56px 16px 48px; }
 .site { margin: 0 0 28px; font: 600 15px/1 "Saira", var(--font); letter-spacing: .04em; color: var(--muted); }
 .site span { color: var(--brand-red); }
 .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-.card { display: block; padding: 22px 24px 20px; border-radius: 14px; background: var(--card);
+.card { position: relative; display: block; padding: 22px 24px 20px; border-radius: 14px; background: var(--card);
   border: 1px solid var(--ring); color: inherit; text-decoration: none;
   transition: border-color .15s, transform .15s; }
 .card:hover { border-color: var(--brand-red); transform: translateY(-1px); }
@@ -29,6 +29,11 @@ main { max-width: 640px; margin: 0 auto; padding: 56px 16px 48px; }
   letter-spacing: .06em; text-transform: uppercase; color: var(--tone);
   background: color-mix(in srgb, var(--tone) 13%, var(--card)); border: 1px solid color-mix(in srgb, var(--tone) 42%, var(--card)); }
 .card .pill { display: block; width: fit-content; }
+/* The label sits in the top right corner of a card; on a narrow screen it goes back above the name. */
+@media (min-width: 441px) {
+  .card .pill { position: absolute; top: 20px; right: 20px; margin: 0; }
+  .card .name, .card .brand { padding-right: 130px; }
+}
 .card .brand { display: flex; }
 .pill.public { --tone: #2fb52f; }
 .pill.semi { --tone: #e3a33c; }
