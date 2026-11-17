@@ -1,6 +1,6 @@
 // Logic of homepage/project/project.js (no DOM, no network) and the static properties of the generic
 // project page: it must contain NO project content, the text comes from the API after sign-in.
-// Run: node --test tests
+// Run: node --test tests/*.test.cjs
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");

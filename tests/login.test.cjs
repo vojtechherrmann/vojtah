@@ -1,4 +1,4 @@
-// Pure logic of homepage/login.js (no DOM, no network). Run: node --test tests
+// Pure logic of homepage/login.js (no DOM, no network). Run: node --test tests/*.test.cjs
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const Logic = require("../homepage/login.js");

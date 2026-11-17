@@ -1,6 +1,6 @@
 // Static properties of the public start page the design relies on: no inline script or style, a CSP
 // that names the API, the sign-in markup hidden until the script runs, nothing private published.
-// Run: node --test tests
+// Run: node --test tests/*.test.cjs
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");

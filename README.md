@@ -6,7 +6,7 @@ project, and a small optional sign-in that unlocks further projects for invited 
 | Part | What |
 |---|---|
 | [`homepage/`](homepage/) | the static page (GitHub Pages) |
-| [`tests/`](tests/) | node tests of the page (`node --test tests`) |
+| [`tests/`](tests/) | node tests of the page (`node --test tests/*.test.cjs`) |
 
 The projects are separate repositories:
 [InBody Aggregator](https://github.com/vojtechherrmann/inbody-aggregator) (`inbody.vojtah.cz`,

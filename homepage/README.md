@@ -74,4 +74,4 @@ If `/me` reports `user.password_admin_set` (an admin assigned the password), a s
 hint "Your password was set by the admin - consider changing it." is shown until the password is
 changed. The pure parts (`Logic.classifyPasswordChange`, `passwordRules`, `checkNewPassword`,
 `passwordMessage`, `showAdminHint`, `buildPasswordRequest`) are tested under node; the policy
-numbers must match `config.PASSWORD_MIN_LENGTH` in the API. Tests: `tests/` (`node --test tests`).
+numbers must match `config.PASSWORD_MIN_LENGTH` in the API. Tests: `tests/` (`node --test tests/*.test.cjs`).

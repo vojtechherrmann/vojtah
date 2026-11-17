@@ -1,7 +1,7 @@
 // A smoke test of the DOM layer of homepage/login.js in a simulated browser (jsdom): the whole
 // script runs against the real index.html with a faked API. It catches what the pure-logic tests
 // cannot, e.g. a ReferenceError at start-up that leaves the sign-in link hidden.
-// Run: npm install && node --test tests   (skipped when jsdom is not installed)
+// Run: npm install && node --test tests/*.test.cjs   (skipped when jsdom is not installed)
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");

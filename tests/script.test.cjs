@@ -1,5 +1,5 @@
 // Logic of homepage/script.js: when may a click on the InBody card open the app, and the single
-// sign-on hop through the app's /sso. Run: node --test tests
+// sign-on hop through the app's /sso. Run: node --test tests/*.test.cjs
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");

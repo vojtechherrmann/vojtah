@@ -21,4 +21,4 @@ jobs:
         with:
           node-version: 22
       - run: npm ci --no-audit --no-fund   # jsdom, dev-only (DOM smoke test)
-      - run: node --test tests
+      - run: node --test tests/*.test.cjs

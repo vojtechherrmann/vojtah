@@ -1,7 +1,7 @@
 // homepage/404.html + homepage/route.js: the "page not found" that doubles as the page of a private
 // project with its own address (/a/b -> section "a-b" from the API). Pure logic, static
 // properties of the page, and a jsdom run of the DOM layer with a faked API.
-// Run: npm install && node --test tests   (the jsdom part is skipped when jsdom is not installed)
+// Run: npm install && node --test tests/*.test.cjs   (the jsdom part is skipped when jsdom is not installed)
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
