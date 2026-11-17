@@ -26,7 +26,7 @@ no-JavaScript case are a plain link. The probe URL is the `data-warm` attribute 
 
 ## Optional sign-in
 
-`login.js` (one file, no dependencies, no inline code) adds a small "Sign in" link in the top right
+`login.js` (one file, no dependencies, no inline code) adds a "Login" button (a box with a user icon) in the top right; once signed in the same box shows the user name and opens a menu with Change password and Sign out
 and a `<dialog>` with the form. It talks to the site API (code in a private repository; only its public host `https://api.vojtah.cz`,
 named in `<meta name="site-api">`, appears here) with `fetch(..., credentials: "include")`; after a successful sign-in it
 shows the user's name with "Sign out" and draws the sections `GET /me` returns: new cards, or the

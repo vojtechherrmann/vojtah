@@ -106,6 +106,7 @@ dialog input { width: 100%; padding: 8px 10px; font: inherit; color: var(--ink);
   font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--ring);
   border-radius: 999px; cursor: pointer; }
 .userbtn:hover, .userbtn[aria-expanded="true"] { border-color: var(--brand-red); }
+.userbtn[hidden] { display: none; }
 .userbtn:focus-visible, .menuitem:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .usericon { width: 18px; height: 18px; flex: none; fill: currentColor; color: var(--ink-2); }
 .chev { width: 10px; height: 10px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6;

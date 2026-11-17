@@ -16,7 +16,10 @@
     <div class="top">
       <h1 class="site">vojtah<span>.cz</span></h1>
       <div class="account" id="account" hidden>
-        <button type="button" class="linkbtn" id="signin">Sign in</button>
+        <button type="button" class="userbtn" id="signin">
+          <svg class="usericon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>
+          <span>Login</span>
+        </button>
         <div class="usermenu" id="whoami" hidden>
           <button type="button" class="userbtn" id="usermenu-btn" aria-haspopup="true" aria-expanded="false" aria-controls="usermenu-list">
             <svg class="usericon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z"/></svg>
@@ -78,7 +81,7 @@
   </main>
   <dialog id="login-dialog" aria-labelledby="login-title">
     <form id="login-form" autocomplete="on">
-      <h2 id="login-title">Sign in</h2>
+      <h2 id="login-title">Login</h2>
       <label for="login-user">Username</label>
       <input id="login-user" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64" required>
       <label for="login-pass">Password</label>
@@ -86,7 +89,7 @@
       <p class="warm" id="login-status" role="status" aria-live="polite" hidden></p>
       <p class="err" id="login-error" role="alert" hidden></p>
       <div class="actions">
-        <button type="submit" class="btn" id="login-submit">Sign in</button>
+        <button type="submit" class="btn" id="login-submit">Login</button>
         <button type="button" class="linkbtn" id="login-cancel">Cancel</button>
       </div>
     </form>

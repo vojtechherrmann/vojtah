@@ -32,12 +32,16 @@ async function start({ remembered, me }) {
 }
 const shown = (d, id) => !d.getElementById(id).hidden;
 
-test("anonymous visitor: no start-up error, the account area and the Sign in link are shown",
+test("anonymous visitor: no start-up error, the account area and the Login button are shown",
   { skip: !JSDOM && "jsdom is not installed" }, async () => {
     const { d, errors } = await start({ remembered: false, me: { status: 401, body: { error: "unauthenticated" } } });
     assert.deepEqual(errors, []);
     assert.ok(shown(d, "account") && shown(d, "signin"));
     assert.ok(!shown(d, "whoami"));
+    // the same kind of box as the signed-in user: the user icon and the word Login
+    const btn = d.getElementById("signin");
+    assert.ok(btn.classList.contains("userbtn") && btn.querySelector("svg.usericon"));
+    assert.equal(btn.textContent.trim(), "Login");
     assert.equal(d.getElementById("extra-cards").children.length, 0);
   });
 
