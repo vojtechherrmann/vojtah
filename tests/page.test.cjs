@@ -38,3 +38,10 @@ test("login.js: credentials only for the API call, never innerHTML", () => {
   assert.ok(js.includes('credentials: "omit"')); // /dbstatus and /healthz carry no cookies
   assert.ok(js.includes("dbstatus") && js.includes("DB_POLL_MS = 3000"));
 });
+
+test("the public AI FOR LIFE card and its work-in-progress page exist", () => {
+  const html = read("index.html");
+  assert.ok(/<a class="card" href="ai-for-life\/">\s*<span class="pill public">Public<\/span>\s*<span class="name">AI FOR LIFE<\/span>/.test(html));
+  const page = read("ai-for-life", "index.html");
+  assert.ok(page.includes('class="pill public"') && /Work in progress/.test(page));
+});
