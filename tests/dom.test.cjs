@@ -185,3 +185,41 @@ test("InBody card, anonymous: no ticket request, the cold database does not hold
     assert.ok(calls.every(c => !c[0].includes("/sso")));
     w.close();
   });
+
+// ------------------------------------------------------------------ pwfields.js: eye button, live rules
+test("password fields: an eye button per field, live rule marks, the match hint, reset when the dialog closes",
+  { skip: !JSDOM && "jsdom is not installed" }, async () => {
+    const dom = new JSDOM(html, { url: "https://vojtah.cz/", runScripts: "outside-only", pretendToBeVisual: true });
+    const w = dom.window, d = w.document;
+    const errors = [];
+    w.addEventListener("error", e => errors.push(String(e.error || e.message)));
+    w.eval(fs.readFileSync(path.join(HOME, "pwfields.js"), "utf8"));
+    await new Promise(resolve => setTimeout(resolve, 50));   // init may wait for DOMContentLoaded
+    assert.deepEqual(errors, []);
+    for (const id of ["login-pass", "pw-current", "pw-new", "pw-repeat"]) {
+      const btn = d.getElementById(id).parentNode.querySelector("button.pw-toggle");
+      assert.ok(btn && btn.type === "button" && btn.getAttribute("aria-label") === "Show password", id);
+    }
+    const field = d.getElementById("pw-new");
+    const eye = field.parentNode.querySelector(".pw-toggle");
+    eye.click();
+    assert.equal(field.type, "text");
+    assert.equal(eye.getAttribute("aria-pressed"), "true");
+    d.getElementById("pw-dialog").dispatchEvent(new w.Event("close"));
+    assert.equal(field.type, "password");
+
+    const ok = rule => d.querySelector(`li[data-rule="${rule}"]`).classList.contains("pw-ok");
+    const type = (el, v) => { el.value = v; el.dispatchEvent(new w.Event("input")); };
+    assert.deepEqual(["length", "upper", "lower", "digit"].map(ok), [false, false, false, false]);
+    type(field, "abcD");
+    assert.deepEqual(["length", "upper", "lower", "digit"].map(ok), [false, true, true, false]);
+    type(field, "abcDefg1");
+    assert.deepEqual(["length", "upper", "lower", "digit"].map(ok), [true, true, true, true]);
+    const match = d.getElementById("pw-match");
+    assert.equal(match.hidden, true);
+    type(d.getElementById("pw-repeat"), "abcDefg");
+    assert.ok(!match.hidden && !match.classList.contains("pw-ok"));
+    type(d.getElementById("pw-repeat"), "abcDefg1");
+    assert.ok(match.classList.contains("pw-ok"));
+    w.close();
+  });

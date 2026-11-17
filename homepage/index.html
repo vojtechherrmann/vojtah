@@ -101,10 +101,19 @@
       <label for="pw-current">Current password</label>
       <input id="pw-current" name="current-password" type="password" autocomplete="current-password" maxlength="1024" required>
       <label for="pw-new">New password</label>
-      <input id="pw-new" name="new-password" type="password" autocomplete="new-password" maxlength="1024" required>
+      <input id="pw-new" name="new-password" type="password" autocomplete="new-password" maxlength="1024" required aria-describedby="pw-rules">
       <label for="pw-repeat">Repeat new password</label>
-      <input id="pw-repeat" name="new-password-repeat" type="password" autocomplete="new-password" maxlength="1024" required>
-      <p class="rules">At least 8 characters, with an uppercase letter, a lowercase letter and a digit.</p>
+      <input id="pw-repeat" name="new-password-repeat" type="password" autocomplete="new-password" maxlength="1024" required aria-describedby="pw-match">
+      <div id="pw-rules" class="rules">
+        <p>The new password needs:</p>
+        <ul data-pw-rules-for="pw-new">
+          <li data-rule="length">at least 8 characters</li>
+          <li data-rule="upper">at least one uppercase letter</li>
+          <li data-rule="lower">at least one lowercase letter</li>
+          <li data-rule="digit">at least one digit</li>
+        </ul>
+      </div>
+      <p id="pw-match" class="rules" data-pw-match="pw-new pw-repeat" hidden>both new passwords match</p>
       <p class="warm" id="pw-status" role="status" aria-live="polite" hidden></p>
       <p class="err" id="pw-error" role="alert" hidden></p>
       <div class="actions">
@@ -115,5 +124,6 @@
   </dialog>
   <script src="script.js" defer></script>
   <script src="login.js" defer></script>
+  <script src="pwfields.js" defer></script>
 </body>
 </html>

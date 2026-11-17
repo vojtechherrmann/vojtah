@@ -527,7 +527,10 @@
   }
 
   function wipePwForm() {
-    pwFields.forEach(f => { f.value = ""; });
+    pwFields.forEach(f => {
+      f.value = "";
+      f.dispatchEvent(new Event("input"));   // pwfields.js: the live rule marks follow
+    });
   }
 
   function openPasswordDialog() {

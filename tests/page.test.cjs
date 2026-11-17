@@ -29,6 +29,7 @@ test("the sign-in UI is hidden until the script runs; the static cards are untou
   assert.ok(html.includes('data-section="cimrmani"') && html.includes('data-section="euforie"'));
   assert.ok(html.includes('<script src="script.js" defer></script>'));
   assert.ok(html.includes('<script src="login.js" defer></script>'));
+  assert.ok(html.includes('<script src="pwfields.js" defer></script>'));
 });
 
 test("login.js: credentials only for the API call, never innerHTML", () => {

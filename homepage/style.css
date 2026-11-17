@@ -4,7 +4,7 @@
   src: url("fonts/saira-latin-wght-normal.woff2") format("woff2"); }
 :root {
   --page: #0f0f0e; --card: #1a1a19; --ink: #f0efec; --ink-2: #c8c7bf; --muted: #9c9b93;
-  --ring: rgba(255, 255, 255, 0.10); --brand-red: #ff2a55; --focus: #5598e7;
+  --ring: rgba(255, 255, 255, 0.10); --brand-red: #ff2a55; --focus: #5598e7; --good: #2fb52f;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: dark;
 }
@@ -97,6 +97,18 @@ dialog input { width: 100%; padding: 8px 10px; font: inherit; color: var(--ink);
 .hint { margin: -14px 0 18px; font-size: 14px; color: var(--ink-2); }
 #pw-hint[hidden] { display: none; }
 .rules { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+.rules p { margin: 0; }
+.rules ul { margin: 4px 0 0; padding: 0; list-style: none; }
+.rules[hidden] { display: none; }
+/* pwfields.js: the eye button inside every password field, the live ✓ per met rule. */
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input { padding-right: 40px; }
+.pw-toggle { position: absolute; top: 0; bottom: 0; right: 2px; display: flex; align-items: center; padding: 0 8px;
+  border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.pw-toggle:hover, .pw-toggle[aria-pressed="true"] { color: var(--ink); }
+.pw-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.pw-mark { display: inline-block; width: 1.4em; }
+.pw-ok { color: var(--good); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
