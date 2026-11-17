@@ -17,12 +17,20 @@ Enable Pages once under Settings > Pages > Source: GitHub Actions.
 
 ## Waking the app
 
-The InBody app scales to zero after an hour without traffic, so the first visit waits ~10-30 s for a
-cold start. `script.js` handles a click on the InBody card: it pings `https://inbody.vojtah.cz/healthz`
-(cross-origin `no-cors` fetch, no cookies; only "the server answered" matters), shows "The app is
-starting up. Please wait, this can take up to 60 seconds." if that takes longer than 1.2 s, and opens
-the app as soon as it answers (after 2 minutes it opens it anyway). Ctrl / Cmd / middle click and the
-no-JavaScript case are a plain link. The probe URL is the `data-warm` attribute of the card.
+The InBody app scales to zero and its database auto-pauses, so the first visit can wait for both.
+The waiting happens IN the card, never on a page in between. `script.js` handles a click on the
+InBody card: it polls `https://inbody.vojtah.cz/dbstatus` every 2 s (CORS for `https://vojtah.cz`
+only, with credentials: the InBody session cookie is SameSite=Strict and both hosts are the same
+site) and opens the app when the container answers AND the database is warm or the visitor has no
+InBody session (`{"warm", "session"}`; the anonymous front page needs no database). After 1.2 s the
+card shows "The app is starting up…" or "The database is waking up…"; after 150 s it opens the app
+anyway. Ctrl / Cmd / middle click and the no-JavaScript case are a plain link. The probe URL is the
+`data-warm` attribute of the card.
+
+Cards of private sections with an app (`app_url`, from the site API after sign-in) do the same in
+`login.js`: a click polls `GET /sections/<id>/wake` on the API (which probes the app, so no app host
+is named here) and then opens `app_url`. The card's href (`/a/b`, the 404 route page) is only for a
+new tab or a bookmark.
 
 ## Optional sign-in
 

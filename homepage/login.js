@@ -18,6 +18,9 @@
   const ATTEMPT_TIMEOUT_MS = 45000;
   const GIVE_UP_MS = 150000;
   const SHOW_AFTER_MS = 1200;   // a warm API answers faster: no flicker
+  const WAKE_POLL_MS = 3000;    // a card whose section has an app: GET /sections/<id>/wake
+  const APP_GIVE_UP_MS = 300000;
+  const APP_STARTING = "The app is starting up. Please wait, this can take up to 2 minutes.";
   const HINT_KEY = "vojtah.signedin";
   const BADGES = { public: "Public", semi: "Semi-public", request: "On request", private: "Private" };
   const MESSAGES = {
@@ -69,6 +72,16 @@
       return "error";
     },
 
+    /* GET /sections/<id>/wake -> ready | starting | stop. The API was warm a moment ago, so a hang
+       or a 5xx only means "keep waiting"; anything else (session gone, 404) = stop waiting and let
+       the app itself answer (it has its own sign-in). */
+    classifyWake(outcome) {
+      const kind = Logic.classify(outcome);
+      if (kind === "ok") return outcome.body && outcome.body.ready === true ? "ready" : "starting";
+      if (kind === "cold" || kind === "db_waking") return "starting";
+      return "stop";
+    },
+
     /* done: success; fail: show the message; retry_cold / wait_db: keep waiting. */
     plan(kind) {
       if (kind === "ok") return "done";
@@ -92,6 +105,12 @@
       }
     },
 
+    /* The app behind a section: https: only. */
+    httpsUrl(raw) {
+      const u = Logic.safeUrl(raw);
+      return u && u.startsWith("https:") ? u : null;
+    },
+
     /* "GROUP/NAME" -> the group (drawn smaller, slash included) and the name; no "/" = no group. */
     titleParts(title) {
       const t = String(title || "");
@@ -111,6 +130,7 @@
         summary: s.summary ? String(s.summary) : "",
         href: Logic.safeUrl(s.url),
         linkLabel: s.link_label ? String(s.link_label) : "Open",
+        appUrl: Logic.httpsUrl(s.app_url),
       };
     },
 
@@ -305,6 +325,34 @@
     return node;
   }
 
+  async function openApp(event, card, note, m) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey ||
+        event.shiftKey || event.altKey) return;   // new tab / window: the href (its page waits too)
+    event.preventDefault();
+    if (card.dataset.waking) return;
+    card.dataset.waking = "1";
+    const started = Date.now();
+    const reveal = setTimeout(() => { card.classList.add("waiting"); note.hidden = false; }, SHOW_AFTER_MS);
+    for (;;) {
+      const kind = Logic.classifyWake(await send("/sections/" + encodeURIComponent(m.id) + "/wake"));
+      if (kind !== "starting" || Date.now() - started > APP_GIVE_UP_MS) break;
+      await sleep(WAKE_POLL_MS);
+    }
+    clearTimeout(reveal);
+    window.location.assign(m.appUrl);
+  }
+
+  // Back button (bfcache): a card that was waiting must be usable again.
+  window.addEventListener("pageshow", event => {
+    if (!event.persisted) return;
+    document.querySelectorAll(".card[data-waking]").forEach(card => {
+      delete card.dataset.waking;
+      card.classList.remove("waiting");
+      const note = card.querySelector(".warm");
+      if (note) note.hidden = true;
+    });
+  });
+
   function drawCard(section) {
     const m = Logic.cardModel(section);
     const body = [
@@ -318,6 +366,14 @@
       card.href = m.href;
       card.rel = "noopener";
       body.push(el("span", "go", m.linkLabel + " →"));
+      if (m.appUrl) {   // wait for the app IN the card, then open it: no page in between
+        const note = el("span", "warm", APP_STARTING);
+        note.setAttribute("role", "status");
+        note.setAttribute("aria-live", "polite");
+        note.hidden = true;
+        body.push(note);
+        card.addEventListener("click", event => openApp(event, card, note, m));
+      }
     } else {
       card = el("div", "card static");
     }

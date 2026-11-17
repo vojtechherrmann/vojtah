@@ -57,7 +57,7 @@ test("titleParts: the part up to the last '/' is the group, drawn smaller", () =
 
 test("cardModel: whitelists the badge, never trusts HTML, defaults the link label", () => {
   const m = Logic.cardModel({ id: "p", title: "<b>x</b>", badge: "request", summary: "s", url: "https://e.test/", link_label: "Go" });
-  assert.deepEqual(m, { id: "p", title: "<b>x</b>", badge: "request", badgeLabel: "On request", summary: "s", href: "https://e.test/", linkLabel: "Go" });
+  assert.deepEqual(m, { id: "p", title: "<b>x</b>", badge: "request", badgeLabel: "On request", summary: "s", href: "https://e.test/", linkLabel: "Go", appUrl: null });
   const odd = Logic.cardModel({ id: "q", title: "t", badge: "constructor", url: "javascript:1" });
   assert.equal(odd.badge, "private");
   assert.equal(odd.badgeLabel, "Private");
@@ -91,6 +91,7 @@ test("cardModel: a restricted section without a URL is a static card with the Pr
     summary: "A short description.",
     href: null, // no link: the DOM layer draws a non-clickable card
     linkLabel: "Open",
+    appUrl: null,
   });
 });
 
@@ -197,4 +198,18 @@ test("buildPasswordRequest: the JSON body has exactly the two fields the API tak
   assert.equal(req.headers["X-CSRF-Token"], "csrf-token");
   assert.deepEqual(JSON.parse(req.body), { current_password: "Old-Pass-1", new_password: "Novy-Heslo-2026" });
   assert.equal(Logic.buildPasswordRequest("a", "b", null).headers["X-CSRF-Token"], "");
+});
+
+test("cardModel / classifyWake: an app card (https app_url only) and its waiting states", () => {
+  assert.equal(Logic.cardModel({ app_url: "https://app.example.test/" }).appUrl, "https://app.example.test/");
+  for (const bad of ["http://app.example.test/", "mailto:a@example.test", "javascript:1", "", null]) {
+    assert.equal(Logic.cardModel({ app_url: bad }).appUrl, null, String(bad));
+  }
+  assert.equal(Logic.classifyWake(res(200, { ready: true })), "ready");
+  assert.equal(Logic.classifyWake(res(200, { ready: false })), "starting");
+  assert.equal(Logic.classifyWake({ type: "network" }), "starting");
+  assert.equal(Logic.classifyWake(res(503, { error: "db_waking" })), "starting");
+  assert.equal(Logic.classifyWake(res(502)), "starting");
+  assert.equal(Logic.classifyWake(res(404, { error: "not_found" })), "stop");
+  assert.equal(Logic.classifyWake(res(401)), "stop");
 });

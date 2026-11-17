@@ -10,7 +10,7 @@ PRIVATE repository and in a database, never here.
 
 | Path | What |
 |---|---|
-| `homepage/` | the page: `index.html`, `style.css`, `script.js` (wakes the InBody app on click), `login.js` (optional sign-in and self-service password change against the site API), `cimrmani/`, `euforie/` (contact-only pages), `404.html` + `route.js` (every unknown path; for a signed-in visitor `/a/b` loads section `a-b` from the API and, if it has an app, waits for it to start and opens it), `CNAME` |
+| `homepage/` | the page: `index.html`, `style.css`, `script.js` (wakes the InBody app and its database on click, waiting in the card), `login.js` (optional sign-in, self-service password change, private cards; an app card waits for its app in the card), `cimrmani/`, `euforie/` (contact-only pages), `404.html` + `route.js` (every unknown path; for a signed-in visitor `/a/b` loads section `a-b` from the API and, if it has an app, waits for it to start and opens it), `CNAME` |
 | `tests/` | node tests: `npm install && node --test tests` (jsdom is a dev-only dependency for the DOM smoke test `tests/dom.test.cjs`; the page itself has none) |
 | `.github/workflows/` | `homepage-test.yml` (on push), `homepage-pages.yml` (manual publish) |
 | `.claude/` | Claude Code settings and the git-guard hook |

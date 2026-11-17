@@ -26,7 +26,11 @@ async function start({ remembered, me }) {
   w.fetch = async url => (String(url).endsWith("/me")
     ? { status: me.status, json: async () => me.body }
     : { status: 404, json: async () => ({}) });
-  try { w.eval(js); } catch (err) { errors.push("EVAL: " + err); }
+  // jsdom cannot navigate and its Location cannot be patched: record where the page would go
+  w.__went = [];
+  const src = js.replace("window.location.assign(", "window.__went.push(");
+  assert.notEqual(src, js, "login.js no longer opens an app with window.location.assign(");
+  try { w.eval(src); } catch (err) { errors.push("EVAL: " + err); }
   await new Promise(resolve => setTimeout(resolve, 200));
   return { w, d: w.document, errors };
 }
@@ -75,4 +79,35 @@ test("signed-in visitor: name, Change password, the admin-set hint and the priva
     assert.equal(d.querySelector("#extra-cards .name .group").textContent, "GROUP/");
     d.getElementById("changepw").click();
     assert.equal(d.getElementById("pw-dialog").open, true);
+  });
+
+test("an app card waits IN the card for GET /sections/<id>/wake, then opens app_url (no page in between)",
+  { skip: !JSDOM && "jsdom is not installed" }, async () => {
+    const section = { id: "app1", title: "GROUP/APP", badge: "private", visibility: "restricted", summary: null,
+                      url: "https://vojtah.cz/group/app", link_label: "Open", app_url: "https://app.example.test/" };
+    const { w, d, errors } = await start({ remembered: true, me: { status: 200, body: {
+      user: { id: "u1", is_admin: false, password_admin_set: false }, csrf: "t", sections: [section] } } });
+    assert.deepEqual(errors, []);
+    const card = d.querySelector("#extra-cards a.card");
+    assert.equal(card.getAttribute("href"), "https://vojtah.cz/group/app");   // new tab / bookmark
+    const note = card.querySelector(".warm");
+    assert.ok(note && note.hidden);
+    let ready = false;
+    const calls = [];
+    w.fetch = async url => {
+      calls.push(String(url));
+      return { status: 200, json: async () => ({ ready }) };
+    };
+    const went = w.__went;
+    const click = new w.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+    card.dispatchEvent(click);
+    assert.equal(click.defaultPrevented, true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    assert.ok(calls.length >= 1 && calls.every(u => u.endsWith("/sections/app1/wake")));
+    assert.ok(!note.hidden && card.classList.contains("waiting"));
+    assert.deepEqual(went, []);
+    ready = true;
+    await new Promise(resolve => setTimeout(resolve, 3300));
+    assert.deepEqual(went, ["https://app.example.test/"]);
+    w.close();
   });
