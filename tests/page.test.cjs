@@ -45,3 +45,41 @@ test("the public AI FOR LIFE card and its work-in-progress page exist", () => {
   const page = read("ai-for-life", "index.html");
   assert.ok(page.includes('class="pill public"') && /Work in progress/.test(page));
 });
+
+test("change password: a button next to Sign out and a dialog with the right autocomplete hints", () => {
+  const html = read("index.html");
+  const who = /<span id="whoami" hidden>[\s\S]*?<\/span>\s*<\/div>/.exec(html)[0];
+  assert.ok(who.includes('id="changepw"') && who.includes('id="signout"'));
+  assert.ok(who.indexOf('id="changepw"') < who.indexOf('id="signout"'));
+  const dialog = /<dialog id="pw-dialog"[\s\S]*?<\/dialog>/.exec(html)[0];
+  assert.ok(dialog.includes('aria-labelledby="pw-title"'));
+  const input = id => new RegExp('<input[^>]*id="' + id + '"[^>]*>').exec(dialog)[0];
+  assert.ok(/type="password"/.test(input("pw-current")) && /autocomplete="current-password"/.test(input("pw-current")));
+  for (const id of ["pw-new", "pw-repeat"]) {
+    assert.ok(/type="password"/.test(input(id)) && /autocomplete="new-password"/.test(input(id)), id);
+  }
+  for (const id of ["pw-current", "pw-new", "pw-repeat"]) assert.ok(/maxlength="1024"/.test(input(id)) && /required/.test(input(id)), id);
+  // a (hidden) username field lets password managers attach the new password to the right account
+  assert.ok(/autocomplete="username"/.test(input("pw-user")));
+  assert.ok(dialog.includes('id="pw-status"') && dialog.includes('id="pw-error"') && dialog.includes('id="pw-cancel"'));
+  // the admin hint is hidden until /me says so
+  assert.ok(/id="pw-hint"[^>]*hidden/.test(html));
+  assert.ok(html.includes("Your password was set by the admin - consider changing it."));
+  assert.ok(!html.includes("<style") && !html.includes(" style=") && !html.includes(" onclick="));
+});
+
+test("change password: login.js sends it through the one API helper, as text, nothing is stored", () => {
+  const js = read("login.js");
+  assert.ok(js.includes('"/account/password"'));
+  assert.equal(js.split('credentials: "include"').length - 1, 1); // still only the send() helper
+  assert.ok(!js.includes("innerHTML"));
+  // the passwords never go to storage, the console or the page text
+  assert.ok(!/localStorage\.setItem\([^)]*(pw|pass)/i.test(js));
+  assert.ok(!/console\.(log|debug|info|warn|error)/.test(js));
+  assert.ok(js.includes('addEventListener("close"')); // fields are wiped when the dialog closes
+});
+
+test("change password: the dialog styles live in style.css (no inline style, CSP-safe)", () => {
+  const css = read("style.css");
+  assert.ok(css.includes(".visually-hidden") && css.includes("#pw-hint"));
+});

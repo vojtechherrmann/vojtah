@@ -30,6 +30,27 @@
     error: "Something went wrong. Please try again.",
   };
 
+  // Change password. The server (not this file) is the authority on the policy; the page only
+  // pre-checks it so a typo does not cost a request (the API counts every attempt).
+  const PASSWORD_MIN_LENGTH = 8;
+  const ADMIN_HINT = "Your password was set by the admin - consider changing it.";
+  const RULE_TEXT = {
+    length: "at least " + PASSWORD_MIN_LENGTH + " characters",
+    upper: "an uppercase letter",
+    lower: "a lowercase letter",
+    digit: "a digit",
+  };
+  const PASSWORD_MESSAGES = {
+    ok: "Password changed. Your other sessions were signed out.",
+    wrong_current: "The current password is wrong.",
+    need_current: "Enter your current password.",
+    mismatch: "The new passwords do not match.",
+    same: "The new password must differ from the current one.",
+    weak: "Please choose a stronger new password.",
+    limited: "Too many attempts. Please wait a few minutes and try again.",
+    signed_out: "Your session has expired. Please sign in again.",
+  };
+
   // ------------------------------------------------------------------ pure logic (no DOM, no network)
   const Logic = {
     BADGES,
@@ -86,6 +107,70 @@
       };
     },
 
+    // ---- change password
+
+    /* What did POST /account/password answer? Same waiting states as everywhere; a 401 is either
+       the wrong CURRENT password (invalid_credentials) or no / expired session. */
+    classifyPasswordChange(outcome) {
+      if (!outcome || outcome.type === "network") return "cold";
+      const { status, body } = outcome;
+      const code = body && body.error;
+      if (status === 401) return code === "invalid_credentials" ? "wrong_current" : "signed_out";
+      if (status === 400 && code === "invalid_new_password") return "weak";
+      if (status === 429) return "limited";
+      return Logic.classify(outcome);
+    },
+
+    PASSWORD_MIN_LENGTH,
+    ADMIN_HINT,
+
+    /* The rules a NEW password breaks, in the server's order (Unicode letters, ASCII digits). */
+    passwordRules(password) {
+      const pw = String(password || "");
+      const rules = [];
+      if ([...pw].length < PASSWORD_MIN_LENGTH) rules.push("length");
+      if (!/\p{Lu}/u.test(pw)) rules.push("upper");
+      if (!/\p{Ll}/u.test(pw)) rules.push("lower");
+      if (!/[0-9]/.test(pw)) rules.push("digit");
+      return rules;
+    },
+
+    /* Cheap checks before any request: null = go ahead, else {kind, rules}. */
+    checkNewPassword(current, next, repeat) {
+      if (!current) return { kind: "need_current", rules: [] };
+      if (next !== repeat) return { kind: "mismatch", rules: [] };
+      const rules = Logic.passwordRules(next);
+      if (rules.length) return { kind: "weak", rules };
+      if (next === current) return { kind: "same", rules: [] };
+      return null;
+    },
+
+    /* A line of plain text for the dialog. `rules` = broken rule codes (from checkNewPassword or
+       the API's `rules`); unknown codes are ignored, never shown. */
+    passwordMessage(kind, rules) {
+      if (kind === "weak") {
+        const known = (rules || []).filter(r => Object.prototype.hasOwnProperty.call(RULE_TEXT, r));
+        if (known.length) return "The new password needs " + known.map(r => RULE_TEXT[r]).join(", ") + ".";
+        if ((rules || []).includes("same")) return PASSWORD_MESSAGES.same;
+        return PASSWORD_MESSAGES.weak;
+      }
+      if (Object.prototype.hasOwnProperty.call(PASSWORD_MESSAGES, kind)) return PASSWORD_MESSAGES[kind];
+      return Logic.messageFor(kind);
+    },
+
+    /* The admin assigned this password: recommend a change (never blocking). */
+    showAdminHint(user) {
+      return !!user && user.password_admin_set === true;
+    },
+
+    buildPasswordRequest(current, next, csrfToken) {
+      return {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken || "" },
+        body: JSON.stringify({ current_password: current, new_password: next }),
+      };
+    },
+
     /* The overall patience while waiting (cold container + resuming database together). */
     expired(startedAt, now) {
       return now - startedAt > GIVE_UP_MS;
@@ -100,7 +185,10 @@
   const dialog = document.getElementById("login-dialog");
   const account = document.getElementById("account");
   if (!meta || !account || !dialog || typeof dialog.showModal !== "function" || !window.fetch ||
-      !window.AbortController) return;   // anything missing: the static page stays as it is
+      !window.AbortController) return;
+  const canChangePassword = !!(changepw && pwDialog && pwForm && pwHint && pwCurrent && pwNew &&
+                               pwRepeat && pwSubmit && pwStatus && pwError && pwUser &&
+                               typeof pwDialog.showModal === "function");   // anything missing: the static page stays as it is
 
   const API = meta.content.replace(/\/+$/, "");
   const $ = id => document.getElementById(id);
@@ -109,6 +197,12 @@
   const form = $("login-form"), userField = $("login-user"), passField = $("login-pass");
   const loginStatus = $("login-status"), loginError = $("login-error"), submit = $("login-submit");
   const extra = $("extra-cards");
+  const changepw = $("changepw"), pwHint = $("pw-hint"), pwDialog = $("pw-dialog");
+  const pwForm = $("pw-form"), pwUser = $("pw-user"), pwCurrent = $("pw-current");
+  const pwNew = $("pw-new"), pwRepeat = $("pw-repeat"), pwSubmit = $("pw-submit");
+  const pwStatus = $("pw-status"), pwError = $("pw-error");
+  const pwFields = [pwCurrent, pwNew, pwRepeat];
+  let noteTimer = null;
 
   let csrf = null;
   let busy = false;
@@ -253,9 +347,23 @@
     node.classList.toggle("waiting-note", kind === "cold" || kind === "db_waking");
   }
 
+  function showHint(user) {
+    if (pwHint) pwHint.hidden = !(canChangePassword && Logic.showAdminHint(user));
+  }
+
+  /* A short confirmation / notice under the header (plain text), gone after a few seconds. */
+  function notify(text) {
+    clearTimeout(noteTimer);
+    accountStatus.classList.remove("waiting-note");
+    accountStatus.textContent = text;
+    accountStatus.hidden = false;
+    noteTimer = setTimeout(() => { accountStatus.hidden = true; accountStatus.textContent = ""; }, 8000);
+  }
+
   function applyState(state) {
     csrf = state.csrf || null;
     showAccount(state.user);
+    showHint(state.user);
     if (state.user) {
       remember(true);
       showSections(state.sections);
@@ -328,7 +436,73 @@
     }
   }
 
+  // ---- change password
+  function setPwError(kind, rules) {
+    pwError.textContent = kind ? Logic.passwordMessage(kind, rules) : "";
+    pwError.hidden = !kind;
+  }
+
+  function lockPwForm(on) {
+    pwSubmit.disabled = on;
+    pwFields.forEach(f => { f.disabled = on; });
+  }
+
+  function wipePwForm() {
+    pwFields.forEach(f => { f.value = ""; });
+  }
+
+  function openPasswordDialog() {
+    wipePwForm();
+    setStatus(pwStatus, null);
+    setPwError(null);
+    pwUser.value = who.textContent;   // lets a password manager file the new password under this account
+    pwDialog.showModal();
+    pwCurrent.focus();
+  }
+
+  async function doChangePassword(event) {
+    event.preventDefault();
+    if (busy) return;
+    const problem = Logic.checkNewPassword(pwCurrent.value, pwNew.value, pwRepeat.value);
+    if (problem) {
+      setPwError(problem.kind, problem.rules);
+      return;
+    }
+    busy = true;
+    lockPwForm(true);
+    setPwError(null);
+    const note = waitNote(kind => setStatus(pwStatus, kind));
+    const result = await call("/account/password",
+                              Logic.buildPasswordRequest(pwCurrent.value, pwNew.value, csrf),
+                              kind => note.update(kind));
+    note.stop();
+    setStatus(pwStatus, null);
+    busy = false;
+    lockPwForm(false);
+    const kind = result.kind === "unavailable" ? "unavailable" : Logic.classifyPasswordChange(result.outcome);
+    if (kind === "ok") {
+      wipePwForm();
+      pwDialog.close();
+      showHint({ password_admin_set: false });
+      notify(Logic.passwordMessage("ok"));
+    } else if (kind === "signed_out") {
+      wipePwForm();
+      pwDialog.close();
+      applyState({ user: null, csrf: null, sections: [] });
+      notify(Logic.passwordMessage("signed_out"));
+    } else {
+      if (kind === "wrong_current") { pwCurrent.value = ""; pwCurrent.focus(); }
+      setPwError(kind, result.outcome && result.outcome.body && result.outcome.body.rules);
+    }
+  }
+
   signin.addEventListener("click", openDialog);
+  if (canChangePassword) {
+    changepw.addEventListener("click", openPasswordDialog);
+    $("pw-cancel").addEventListener("click", () => pwDialog.close());
+    pwDialog.addEventListener("close", wipePwForm);   // Esc, Cancel, success: nothing stays in the fields
+    pwForm.addEventListener("submit", doChangePassword);
+  }
   $("login-cancel").addEventListener("click", () => dialog.close());
   form.addEventListener("submit", doLogin);
   signout.addEventListener("click", doLogout);

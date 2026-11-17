@@ -87,3 +87,108 @@ test("cardModel: a restricted section without a URL is a static card with the Pr
     linkLabel: "Open",
   });
 });
+
+// ------------------------------------------------------------------------------ change password
+
+const pwRes = (status, body = null) => res(status, body);
+
+test("classifyPasswordChange: every answer of POST /account/password has its own kind", () => {
+  assert.equal(Logic.classifyPasswordChange(pwRes(204)), "ok");
+  // a wrong CURRENT password is a 401 invalid_credentials; an expired session is a 401 too
+  assert.equal(Logic.classifyPasswordChange(pwRes(401, { error: "invalid_credentials" })), "wrong_current");
+  assert.equal(Logic.classifyPasswordChange(pwRes(401, { error: "unauthenticated" })), "signed_out");
+  assert.equal(Logic.classifyPasswordChange(pwRes(401)), "signed_out");
+  assert.equal(Logic.classifyPasswordChange(pwRes(400, { error: "invalid_new_password", rules: ["length"] })), "weak");
+  assert.equal(Logic.classifyPasswordChange(pwRes(400, { error: "bad_request" })), "error");
+  assert.equal(Logic.classifyPasswordChange(pwRes(429, { error: "rate_limited" })), "limited");
+  assert.equal(Logic.classifyPasswordChange(pwRes(403, { error: "csrf" })), "forbidden");
+  assert.equal(Logic.classifyPasswordChange(pwRes(500, { error: "server_error" })), "error");
+  // the two waiting states are the same as everywhere else
+  assert.equal(Logic.classifyPasswordChange(pwRes(503, { error: "db_waking" })), "db_waking");
+  assert.equal(Logic.classifyPasswordChange({ type: "network" }), "cold");
+  assert.equal(Logic.classifyPasswordChange(pwRes(502)), "cold");
+  assert.equal(Logic.classifyPasswordChange(undefined), "cold");
+});
+
+test("classifyPasswordChange: only the waiting states keep waiting (plan is shared)", () => {
+  for (const kind of ["wrong_current", "weak", "signed_out", "limited", "forbidden", "mismatch", "same"]) {
+    assert.equal(Logic.plan(kind), "fail", kind);
+  }
+  assert.equal(Logic.plan(Logic.classifyPasswordChange(pwRes(204))), "done");
+  assert.equal(Logic.plan(Logic.classifyPasswordChange({ type: "network" })), "retry_cold");
+});
+
+test("passwordRules: the same four rules as the server, in the same order", () => {
+  assert.deepEqual(Logic.passwordRules("Abcdefg1"), []);
+  assert.deepEqual(Logic.passwordRules("Žluťoučký kůň 7"), []); // non-ASCII letters count
+  assert.deepEqual(Logic.passwordRules("Abcdef1"), ["length"]);
+  assert.deepEqual(Logic.passwordRules("abcdefg1"), ["upper"]);
+  assert.deepEqual(Logic.passwordRules("ABCDEFG1"), ["lower"]);
+  assert.deepEqual(Logic.passwordRules("Abcdefgh"), ["digit"]);
+  assert.deepEqual(Logic.passwordRules(""), ["length", "upper", "lower", "digit"]);
+  assert.equal(Logic.PASSWORD_MIN_LENGTH, 8);
+});
+
+test("passwordRules: the length counts characters, not UTF-16 units", () => {
+  // "Ab1" + an emoji (2 UTF-16 units) + "cde" is 7 characters but 8 units: still too short
+  assert.equal("Ab1\u{1F600}cde".length, 8);
+  assert.deepEqual(Logic.passwordRules("Ab1\u{1F600}cde"), ["length"]);
+  assert.deepEqual(Logic.passwordRules("Ab1\u{1F600}cdef"), []);
+});
+
+test("checkNewPassword: mismatch, policy and 'same' are caught before any request", () => {
+  assert.equal(Logic.checkNewPassword("Old-Pass-1", "Novy-Heslo-2026", "Novy-Heslo-2026"), null);
+  assert.deepEqual(Logic.checkNewPassword("Old-Pass-1", "Novy-Heslo-2026", "Novy-Heslo-2027"), { kind: "mismatch", rules: [] });
+  assert.deepEqual(Logic.checkNewPassword("Old-Pass-1", "abc", "abc"), { kind: "weak", rules: ["length", "upper", "digit"] });
+  assert.deepEqual(Logic.checkNewPassword("Same-Pass-1", "Same-Pass-1", "Same-Pass-1"), { kind: "same", rules: [] });
+  // an empty current password is not worth a request either
+  assert.deepEqual(Logic.checkNewPassword("", "Novy-Heslo-2026", "Novy-Heslo-2026"), { kind: "need_current", rules: [] });
+  // mismatch wins over weak (the user typed two different things: fix that first)
+  assert.equal(Logic.checkNewPassword("Old-Pass-1", "abc", "abd").kind, "mismatch");
+});
+
+test("passwordMessage: plain texts, the broken rules named, no password anywhere", () => {
+  assert.match(Logic.passwordMessage("wrong_current"), /current password is wrong/i);
+  assert.match(Logic.passwordMessage("mismatch"), /do not match/);
+  assert.match(Logic.passwordMessage("same"), /differ from the current/);
+  assert.match(Logic.passwordMessage("limited"), /Too many attempts/);
+  assert.match(Logic.passwordMessage("signed_out"), /sign in again/i);
+  assert.match(Logic.passwordMessage("ok"), /Password changed/);
+  const weak = Logic.passwordMessage("weak", ["length", "digit"]);
+  assert.match(weak, /at least 8 characters/);
+  assert.match(weak, /a digit/);
+  assert.doesNotMatch(weak, /uppercase|lowercase/);
+  assert.match(Logic.passwordMessage("weak", ["upper", "lower"]), /an uppercase letter.*a lowercase letter/);
+  // the shared kinds still work through it
+  assert.equal(Logic.passwordMessage("cold"), Logic.MESSAGES.cold);
+  assert.equal(Logic.passwordMessage("db_waking"), Logic.MESSAGES.db_waking);
+  assert.equal(Logic.passwordMessage("nope"), Logic.MESSAGES.error);
+  // the login wording must not leak into the change dialog
+  assert.doesNotMatch(Logic.passwordMessage("wrong_current"), /username/i);
+});
+
+test("the server's rule codes that the page does not know are ignored, never rendered raw", () => {
+  const msg = Logic.passwordMessage("weak", ["length", "<b>x</b>", "same"]);
+  assert.doesNotMatch(msg, /<b>/);
+  assert.match(msg, /at least 8 characters/);
+  assert.match(Logic.passwordMessage("weak", ["same"]), /differ from the current/);
+  assert.match(Logic.passwordMessage("weak", []), /new password/i);
+  assert.match(Logic.passwordMessage("weak"), /new password/i);
+});
+
+test("showAdminHint: only a true flag from the API recommends a change", () => {
+  assert.equal(Logic.showAdminHint({ id: "u", password_admin_set: true }), true);
+  for (const bad of [{ id: "u", password_admin_set: false }, { id: "u" }, { id: "u", password_admin_set: "yes" }, null, undefined]) {
+    assert.equal(Logic.showAdminHint(bad), false, JSON.stringify(bad));
+  }
+  assert.equal(Logic.ADMIN_HINT, "Your password was set by the admin - consider changing it.");
+});
+
+test("buildPasswordRequest: the JSON body has exactly the two fields the API takes", () => {
+  const req = Logic.buildPasswordRequest("Old-Pass-1", "Novy-Heslo-2026", "csrf-token");
+  assert.equal(req.method, "POST");
+  assert.equal(req.headers["Content-Type"], "application/json");
+  assert.equal(req.headers["X-CSRF-Token"], "csrf-token");
+  assert.deepEqual(JSON.parse(req.body), { current_password: "Old-Pass-1", new_password: "Novy-Heslo-2026" });
+  assert.equal(Logic.buildPasswordRequest("a", "b", null).headers["X-CSRF-Token"], "");
+});

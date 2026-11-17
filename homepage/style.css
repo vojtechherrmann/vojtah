@@ -66,7 +66,7 @@ main { max-width: 640px; margin: 0 auto; padding: 56px 16px 48px; }
 @media (prefers-reduced-motion: reduce) { .waiting .warm::before { animation: none; } }
 
 /* Optional sign-in (login.js). Hidden until the script runs; the static page needs none of this. */
-.top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin: 0 0 28px; }
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 16px; margin: 0 0 28px; }
 .top .site { margin: 0; }
 .account { font-size: 14px; color: var(--muted); }
 .account[hidden], #whoami[hidden], #extra-cards[hidden], .err[hidden] { display: none; }
@@ -92,3 +92,10 @@ dialog input { width: 100%; padding: 8px 10px; font: inherit; color: var(--ink);
 .btn { font: 600 14px var(--font); padding: 8px 18px; border-radius: 8px; border: 0; cursor: pointer;
   color: #0f0f0e; background: var(--brand-red); }
 .btn:disabled { opacity: .6; cursor: progress; }
+/* Change password (login.js): the admin-set hint, the dialog's rules line, the account-manager-only username field. */
+.hint { margin: -14px 0 18px; font-size: 14px; color: var(--ink-2); }
+#pw-hint[hidden] { display: none; }
+.rules { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+

@@ -17,10 +17,11 @@
       <h1 class="site">vojtah<span>.cz</span></h1>
       <div class="account" id="account" hidden>
         <button type="button" class="linkbtn" id="signin">Sign in</button>
-        <span id="whoami" hidden><span id="who"></span> &middot; <button type="button" class="linkbtn" id="signout">Sign out</button></span>
+        <span id="whoami" hidden><span id="who"></span> &middot; <button type="button" class="linkbtn" id="changepw">Change password</button> &middot; <button type="button" class="linkbtn" id="signout">Sign out</button></span>
       </div>
     </div>
     <p class="warm" id="account-status" role="status" aria-live="polite" hidden></p>
+    <p class="hint" id="pw-hint" role="status" hidden>Your password was set by the admin - consider changing it.</p>
     <ul class="cards">
       <li>
         <a class="card" href="ai-for-life/">
@@ -51,7 +52,7 @@
         <a class="card" href="euforie/">
           <span class="pill request">On request</span>
           <span class="name">EUFORIE</span>
-          <p>Scripts that bypass a bug that blocks you from signing up for group lessons once you have a gym membership at euforie.cz.</p>
+          <p>Scripts that bypass a bug that prevents you from signing up for group lessons once you have a gym membership at euforie.cz.</p>
           <span class="go">Details <span aria-hidden="true">→</span></span>
         </a>
       </li>
@@ -77,6 +78,25 @@
       <div class="actions">
         <button type="submit" class="btn" id="login-submit">Sign in</button>
         <button type="button" class="linkbtn" id="login-cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="pw-dialog" aria-labelledby="pw-title">
+    <form id="pw-form" autocomplete="on">
+      <h2 id="pw-title">Change password</h2>
+      <input id="pw-user" class="visually-hidden" name="username" type="text" autocomplete="username" tabindex="-1" aria-hidden="true" readonly>
+      <label for="pw-current">Current password</label>
+      <input id="pw-current" name="current-password" type="password" autocomplete="current-password" maxlength="1024" required>
+      <label for="pw-new">New password</label>
+      <input id="pw-new" name="new-password" type="password" autocomplete="new-password" maxlength="1024" required>
+      <label for="pw-repeat">Repeat new password</label>
+      <input id="pw-repeat" name="new-password-repeat" type="password" autocomplete="new-password" maxlength="1024" required>
+      <p class="rules">At least 8 characters, with an uppercase letter, a lowercase letter and a digit.</p>
+      <p class="warm" id="pw-status" role="status" aria-live="polite" hidden></p>
+      <p class="err" id="pw-error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="submit" class="btn" id="pw-submit">Change password</button>
+        <button type="button" class="linkbtn" id="pw-cancel">Cancel</button>
       </div>
     </form>
   </dialog>
