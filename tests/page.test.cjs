@@ -83,3 +83,13 @@ test("change password: the dialog styles live in style.css (no inline style, CSP
   const css = read("style.css");
   assert.ok(css.includes(".visually-hidden") && css.includes("#pw-hint"));
 });
+
+test("every page has the VH favicon (one file), and the file is an SVG", () => {
+  for (const [file, href] of [["index.html", "favicon.svg"], ["cimrmani/index.html", "../favicon.svg"],
+                              ["euforie/index.html", "../favicon.svg"], ["ai-for-life/index.html", "../favicon.svg"],
+                              ["project/index.html", "../favicon.svg"]]) {
+    assert.ok(read(...file.split("/")).includes(`<link rel="icon" type="image/svg+xml" href="${href}">`), file);
+  }
+  const svg = read("favicon.svg");
+  assert.ok(svg.startsWith("<svg") && svg.includes("<path"));
+});
