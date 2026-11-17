@@ -25,6 +25,7 @@ main { max-width: 640px; margin: 0 auto; padding: 56px 16px 48px; }
 .brand b { font-weight: 800; }
 .card p { margin: 10px 0 0; color: var(--ink-2); }
 .name { display: block; font: 800 26px/1.1 "Saira", "Arial Narrow", system-ui, sans-serif; letter-spacing: .02em; color: var(--ink); }
+.name .group { font-size: .6em; font-weight: 600; letter-spacing: .06em; color: var(--ink-2); }
 .pill { display: inline-block; margin: 0 0 12px; padding: 1px 9px; border-radius: 999px; font: 600 11px/1.6 var(--font);
   letter-spacing: .06em; text-transform: uppercase; color: var(--tone);
   background: color-mix(in srgb, var(--tone) 13%, var(--card)); border: 1px solid color-mix(in srgb, var(--tone) 42%, var(--card)); }

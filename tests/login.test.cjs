@@ -49,6 +49,12 @@ test("safeUrl: only https and mailto become links", () => {
   }
 });
 
+test("titleParts: the part up to the last '/' is the group, drawn smaller", () => {
+  assert.deepEqual(Logic.titleParts("GROUP/NAME"), { group: "GROUP/", name: "NAME" });
+  assert.deepEqual(Logic.titleParts("NAME"), { group: "", name: "NAME" });
+  assert.deepEqual(Logic.titleParts("NAME/"), { group: "", name: "NAME/" });
+});
+
 test("cardModel: whitelists the badge, never trusts HTML, defaults the link label", () => {
   const m = Logic.cardModel({ id: "p", title: "<b>x</b>", badge: "request", summary: "s", url: "https://e.test/", link_label: "Go" });
   assert.deepEqual(m, { id: "p", title: "<b>x</b>", badge: "request", badgeLabel: "On request", summary: "s", href: "https://e.test/", linkLabel: "Go" });

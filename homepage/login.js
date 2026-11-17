@@ -92,6 +92,13 @@
       }
     },
 
+    /* "GROUP/NAME" -> the group (drawn smaller, slash included) and the name; no "/" = no group. */
+    titleParts(title) {
+      const t = String(title || "");
+      const i = t.lastIndexOf("/");
+      return i > 0 && i < t.length - 1 ? { group: t.slice(0, i + 1), name: t.slice(i + 1) } : { group: "", name: t };
+    },
+
     /* A section from the API -> what the DOM layer draws. Unknown badge = the strictest label. */
     cardModel(section) {
       const s = section || {};
@@ -284,11 +291,25 @@
     return node;
   }
 
+  function nameNode(title) {
+    const { group, name } = Logic.titleParts(title);
+    const node = document.createElement("span");
+    node.className = "name";
+    if (group) {
+      const small = document.createElement("span");
+      small.className = "group";
+      small.textContent = group;
+      node.append(small);
+    }
+    node.append(document.createTextNode(name));
+    return node;
+  }
+
   function drawCard(section) {
     const m = Logic.cardModel(section);
     const body = [
       el("span", "pill " + m.badge, m.badgeLabel),
-      el("span", "name", m.title),
+      nameNode(m.title),
     ];
     if (m.summary) body.push(el("p", "", m.summary));
     let card;

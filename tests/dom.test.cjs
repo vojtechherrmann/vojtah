@@ -47,7 +47,7 @@ test("anonymous visitor: no start-up error, the account area and the Login butto
 
 test("signed-in visitor: name, Change password, the admin-set hint and the private card; the dialog opens",
   { skip: !JSDOM && "jsdom is not installed" }, async () => {
-    const section = { id: "example", title: "EXAMPLE", badge: "private", visibility: "restricted",
+    const section = { id: "example", title: "GROUP/EXAMPLE", badge: "private", visibility: "restricted",
                       summary: "S", url: null, link_label: null };
     const { d, errors } = await start({ remembered: true, me: { status: 200, body: {
       user: { id: "u1", is_admin: true, password_admin_set: true }, csrf: "t", sections: [section] } } });
@@ -71,6 +71,8 @@ test("signed-in visitor: name, Change password, the admin-set hint and the priva
     d.getElementById("changepw").click();   // choosing an item closes the menu and opens the dialog
     assert.ok(list.hidden);
     assert.equal(d.getElementById("extra-cards").children.length, 1);
+    assert.equal(d.querySelector("#extra-cards .name").textContent, "GROUP/EXAMPLE");
+    assert.equal(d.querySelector("#extra-cards .name .group").textContent, "GROUP/");
     d.getElementById("changepw").click();
     assert.equal(d.getElementById("pw-dialog").open, true);
   });

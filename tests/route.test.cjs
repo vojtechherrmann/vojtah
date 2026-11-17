@@ -56,6 +56,14 @@ test("pageModel: app_url is https only, links https/mailto only, unknown badge =
   assert.equal(Logic.pageModel({}).linkLabel, "Open");
 });
 
+test("titleParts: the part up to the last '/' is the group", () => {
+  assert.deepEqual(Logic.titleParts("GROUP/NAME"), { group: "GROUP/", name: "NAME" });
+  assert.deepEqual(Logic.titleParts("A/B/C"), { group: "A/B/", name: "C" });
+  for (const plain of ["NAME", "/NAME", "NAME/", "", null]) {
+    assert.deepEqual(Logic.titleParts(plain), { group: "", name: String(plain || "") }, String(plain));
+  }
+});
+
 test("isSelfLink ignores a trailing slash", () => {
   assert.ok(Logic.isSelfLink("https://vojtah.cz/x/y", "https://vojtah.cz/x/y/"));
   assert.ok(!Logic.isSelfLink("https://vojtah.cz/x/z", "https://vojtah.cz/x/y"));
@@ -144,6 +152,7 @@ test("an app section: 'starting', polls /wake, then opens the app; 'Open now' is
   assert.equal(first.d.getElementById("status").textContent, Logic.MESSAGES.starting);
   assert.ok(shown(first.d, "project"));
   assert.equal(first.d.getElementById("p-name").textContent, "ALPHA");
+  assert.equal(first.d.querySelector("#p-name .group"), null);
   const open = first.d.querySelector("#project a");
   assert.equal(open.href, "https://app.example.test/");
   assert.equal(open.textContent, "Open now →");
@@ -158,7 +167,7 @@ test("an app section: 'starting', polls /wake, then opens the app; 'Open now' is
 });
 
 test("a section without an app is drawn like a project page (no link to itself)", { skip }, async () => {
-  const section = { id: "alpha-beta", title: "ALPHA", badge: "request", summary: "S",
+  const section = { id: "alpha-beta", title: "GROUP/ALPHA", badge: "request", summary: "S",
                     url: "https://vojtah.cz/alpha/beta", link_label: "Open", app_url: null };
   const { d, errors, calls } = await run({ pathname: "/alpha/beta", remembered: true,
                                            api: () => ({ status: 200, body: section }) });
@@ -166,4 +175,6 @@ test("a section without an app is drawn like a project page (no link to itself)"
   assert.deepEqual(calls, ["/sections/alpha-beta"]);
   assert.ok(shown(d, "project") && !shown(d, "status"));
   assert.equal(d.querySelector("#project a"), null);
+  assert.equal(d.getElementById("p-name").textContent, "GROUP/ALPHA");
+  assert.equal(d.querySelector("#p-name .group").textContent, "GROUP/");
 });

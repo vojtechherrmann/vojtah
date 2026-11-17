@@ -82,6 +82,13 @@
       }
     },
 
+    /* "GROUP/NAME" -> the group (drawn smaller, slash included) and the name; no "/" = no group. */
+    titleParts(title) {
+      const t = String(title || "");
+      const i = t.lastIndexOf("/");
+      return i > 0 && i < t.length - 1 ? { group: t.slice(0, i + 1), name: t.slice(i + 1) } : { group: "", name: t };
+    },
+
     /* A section from the API -> what the DOM layer draws. Unknown badge = the strictest label. */
     pageModel(section) {
       const s = section || {};
@@ -161,11 +168,25 @@
     return p;
   }
 
+  function nameNode(title) {
+    const { group, name } = Logic.titleParts(title);
+    const node = document.createElement("span");
+    node.className = "name";
+    if (group) {
+      const small = document.createElement("span");
+      small.className = "group";
+      small.textContent = group;
+      node.append(small);
+    }
+    node.append(document.createTextNode(name));
+    return node;
+  }
+
   function render(m) {
     const pill = document.getElementById("p-pill");
     pill.className = "pill " + m.badge;
     pill.textContent = m.badgeLabel;
-    document.getElementById("p-name").textContent = m.title;
+    document.getElementById("p-name").replaceWith(Object.assign(nameNode(m.title), { id: "p-name" }));
     const summary = document.getElementById("p-summary");
     summary.textContent = m.summary;
     summary.hidden = !m.summary;
