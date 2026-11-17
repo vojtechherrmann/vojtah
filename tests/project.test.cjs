@@ -38,6 +38,15 @@ test("pageModel: the shape GET /sections/<id> returns, unknown badge = Private, 
   assert.equal(Logic.pageModel({ title: "T", url: "https://example.test/a", link_label: "Go" }).linkLabel, "Go");
 });
 
+test("isSelfLink: the link to the page itself is not drawn on the page", () => {
+  const here = "https://vojtah.cz/project/?id=x";
+  assert.equal(Logic.isSelfLink("https://vojtah.cz/project/?id=x", here), true);
+  assert.equal(Logic.isSelfLink("https://vojtah.cz/project/?id=y", here), true); // same page, other id
+  assert.equal(Logic.isSelfLink("https://example.test/project/", here), false);
+  assert.equal(Logic.isSelfLink("https://vojtah.cz/other/", here), false);
+  assert.equal(Logic.isSelfLink("not a url", here), false);
+});
+
 test("the project page is generic: no project text, CSP names only the API, no inline code", () => {
   const dir = path.join(__dirname, "..", "homepage", "project");
   const html = fs.readFileSync(path.join(dir, "index.html"), "utf8");

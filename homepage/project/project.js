@@ -68,6 +68,16 @@
       };
     },
 
+    /* The card on the start page links to this very page: do not render that link on the page itself. */
+    isSelfLink(href, here) {
+      try {
+        const a = new URL(href), b = new URL(here);
+        return a.origin === b.origin && a.pathname === b.pathname;
+      } catch (_err) {
+        return false;
+      }
+    },
+
     expired(startedAt, now) {
       return now - startedAt > GIVE_UP_MS;
     },
@@ -111,7 +121,7 @@
     const summary = document.getElementById("p-summary");
     summary.textContent = m.summary;
     summary.hidden = !m.summary;
-    if (m.href) {
+    if (m.href && !Logic.isSelfLink(m.href, location.href)) {
       const p = document.createElement("p");
       const a = document.createElement("a");
       a.className = "mail";
