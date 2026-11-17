@@ -121,3 +121,67 @@ test("a returning visitor while the API wakes up: no loader at the top of the pa
     assert.equal(d.getElementById("account-status").textContent, "");
     w.close();
   });
+
+// ------------------------------------------------------------------ script.js: the InBody card
+const scriptJs = fs.readFileSync(path.join(HOME, "script.js"), "utf8");
+
+async function startCard({ signedIn, dbstatus, sso }) {
+  const dom = new JSDOM(html, { url: "https://vojtah.cz/", runScripts: "outside-only", pretendToBeVisual: true });
+  const w = dom.window;
+  const errors = [];
+  w.addEventListener("error", e => errors.push(String(e.error || e.message)));
+  if (signedIn) w.localStorage.setItem("vojtah.signedin", "1");
+  const calls = [];
+  w.fetch = async (url, init) => {
+    calls.push([String(url), (init && init.method) || "GET"]);
+    if (String(url).endsWith("/dbstatus")) return { status: 200, json: async () => dbstatus() };
+    if (String(url).endsWith("/sso/inbody")) return { status: sso.status, json: async () => sso.body };
+    return { status: 404, json: async () => ({}) };
+  };
+  w.__went = [];
+  const src = scriptJs.replace("window.location.assign(", "window.__went.push(");
+  assert.notEqual(src, scriptJs);
+  try { w.eval(src); } catch (err) { errors.push("EVAL: " + err); }
+  const card = w.document.querySelector("a[data-warm]");
+  const click = new w.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+  card.dispatchEvent(click);
+  assert.equal(click.defaultPrevented, true);
+  return { w, card, calls, errors };
+}
+
+test("InBody card, signed in here: waits for a warm database, gets a ticket, opens the app's /sso",
+  { skip: !JSDOM && "jsdom is not installed" }, async () => {
+    let warm = false;
+    const ticket = "T".repeat(43);
+    const { w, card, calls, errors } = await startCard({
+      signedIn: true, dbstatus: () => ({ warm, session: false }), sso: { status: 200, body: { ticket, expires_in: 60 } } });
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    assert.deepEqual(w.__went, []);                       // the database is still cold
+    assert.ok(card.classList.contains("waiting") && /database/.test(card.querySelector(".warm").textContent));
+    warm = true;
+    await new Promise(resolve => setTimeout(resolve, 2300));
+    assert.deepEqual(errors, []);
+    assert.deepEqual(w.__went, ["https://inbody.vojtah.cz/sso?t=" + ticket]);
+    assert.deepEqual(calls.filter(c => c[0].endsWith("/sso/inbody")), [["https://api.vojtah.cz/sso/inbody", "POST"]]);
+    w.close();
+  });
+
+test("InBody card, signed in but the API says no session: opens the app as before (its own login)",
+  { skip: !JSDOM && "jsdom is not installed" }, async () => {
+    const { w, errors } = await startCard({
+      signedIn: true, dbstatus: () => ({ warm: true, session: false }), sso: { status: 401, body: { error: "unauthenticated" } } });
+    await new Promise(resolve => setTimeout(resolve, 300));
+    assert.deepEqual(errors, []);
+    assert.deepEqual(w.__went, ["https://inbody.vojtah.cz/"]);
+    w.close();
+  });
+
+test("InBody card, anonymous: no ticket request, the cold database does not hold up the front page",
+  { skip: !JSDOM && "jsdom is not installed" }, async () => {
+    const { w, calls } = await startCard({
+      signedIn: false, dbstatus: () => ({ warm: false, session: false }), sso: { status: 500, body: null } });
+    await new Promise(resolve => setTimeout(resolve, 300));
+    assert.deepEqual(w.__went, ["https://inbody.vojtah.cz/"]);
+    assert.ok(calls.every(c => !c[0].includes("/sso")));
+    w.close();
+  });

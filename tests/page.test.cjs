@@ -25,7 +25,7 @@ test("the sign-in UI is hidden until the script runs; the static cards are untou
   const html = read("index.html");
   assert.ok(/id="account" hidden/.test(html));
   assert.ok(html.includes('id="extra-cards" aria-label="Your projects" hidden'));
-  assert.ok(html.includes('data-warm="https://inbody.vojtah.cz/dbstatus"'));
+  assert.ok(html.includes('data-warm="https://inbody.vojtah.cz/dbstatus" data-sso="https://inbody.vojtah.cz/sso"'));
   assert.ok(html.includes('data-section="cimrmani"') && html.includes('data-section="euforie"'));
   assert.ok(html.includes('<script src="script.js" defer></script>'));
   assert.ok(html.includes('<script src="login.js" defer></script>'));

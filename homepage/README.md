@@ -27,6 +27,12 @@ card shows "The app is starting up…" or "The database is waking up…"; after 
 anyway. Ctrl / Cmd / middle click and the no-JavaScript case are a plain link. The probe URL is the
 `data-warm` attribute of the card.
 
+Single sign-on: the accounts of this site and of InBody are the same. For a visitor signed in here
+(the `1` in localStorage) the card also waits for a warm database, then asks the site API for a
+one-time ticket (`POST https://api.vojtah.cz/sso/inbody`, with credentials) and opens the card's
+`data-sso` address (`https://inbody.vojtah.cz/sso?t=<ticket>`), which signs them in there without a
+second login. No session here / any error = the app opens as before, at its own login.
+
 Cards of private sections with an app (`app_url`, from the site API after sign-in) do the same in
 `login.js`: a click polls `GET /sections/<id>/wake` on the API (which probes the app, so no app host
 is named here) and then opens `app_url`. The card's href (`/a/b`, the 404 route page) is only for a
