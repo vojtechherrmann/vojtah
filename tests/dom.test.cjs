@@ -111,3 +111,13 @@ test("an app card waits IN the card for GET /sections/<id>/wake, then opens app_
     assert.deepEqual(went, ["https://app.example.test/"]);
     w.close();
   });
+
+test("a returning visitor while the API wakes up: no loader at the top of the page (waiting lives in cards)",
+  { skip: !JSDOM && "jsdom is not installed" }, async () => {
+    const { w, d, errors } = await start({ remembered: true, me: { status: 503, body: { error: "db_waking" } } });
+    await new Promise(resolve => setTimeout(resolve, 1600));   // past the 1.2 s "show the note" delay
+    assert.deepEqual(errors, []);
+    assert.ok(d.getElementById("account-status").hidden);
+    assert.equal(d.getElementById("account-status").textContent, "");
+    w.close();
+  });

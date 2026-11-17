@@ -452,10 +452,11 @@
   }
 
   // ---- background restore of an earlier sign-in
+  /* Silent: no "starting up" note at the top of the page while the API or its database wakes up.
+     The private cards simply appear when the API answers; waiting is shown only INSIDE a card,
+     after a click (an app card, the InBody card) or in the sign-in dialog. */
   async function restore() {
-    const note = waitNote(kind => setStatus(accountStatus, kind));
-    const result = await call("/me", { method: "GET" }, kind => note.update(kind));
-    note.stop();
+    const result = await call("/me", { method: "GET" }, () => {});
     if (result.kind === "ok") {
       setStatus(accountStatus, null);
       applyState(result.outcome.body);
