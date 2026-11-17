@@ -46,11 +46,11 @@ test("the public AI FOR LIFE card and its work-in-progress page exist", () => {
   assert.ok(page.includes('class="pill public"') && /Work in progress/.test(page));
 });
 
-test("change password: a button next to Sign out and a dialog with the right autocomplete hints", () => {
+test("change password: an item next to Sign out in the user menu and a dialog with the right autocomplete hints", () => {
   const html = read("index.html");
-  const who = /<span id="whoami" hidden>[\s\S]*?<\/span>\s*<\/div>/.exec(html)[0];
-  assert.ok(who.includes('id="changepw"') && who.includes('id="signout"'));
-  assert.ok(who.indexOf('id="changepw"') < who.indexOf('id="signout"'));
+  const menu = /<div class="menu" id="usermenu-list" hidden>[\s\S]*?<\/div>/.exec(html)[0];
+  assert.ok(menu.includes('id="changepw"') && menu.includes('id="signout"'));
+  assert.ok(menu.indexOf('id="changepw"') < menu.indexOf('id="signout"'));
   const dialog = /<dialog id="pw-dialog"[\s\S]*?<\/dialog>/.exec(html)[0];
   assert.ok(dialog.includes('aria-labelledby="pw-title"'));
   const input = id => new RegExp('<input[^>]*id="' + id + '"[^>]*>').exec(dialog)[0];

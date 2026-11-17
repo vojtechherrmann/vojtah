@@ -51,6 +51,21 @@ test("signed-in visitor: name, Change password, the admin-set hint and the priva
     assert.ok(shown(d, "account") && !shown(d, "signin") && shown(d, "whoami"));
     assert.equal(d.getElementById("who").textContent, "u1");
     assert.ok(shown(d, "pw-hint"));
+    // the user sits in a box with an icon; Change password and Sign out are in its drop-down menu
+    const btn = d.getElementById("usermenu-btn"), list = d.getElementById("usermenu-list");
+    assert.ok(btn.querySelector("svg.usericon") && btn.contains(d.getElementById("who")));
+    assert.ok(list.contains(d.getElementById("changepw")) && list.contains(d.getElementById("signout")));
+    assert.ok(list.hidden && btn.getAttribute("aria-expanded") === "false");
+    btn.click();
+    assert.ok(!list.hidden && btn.getAttribute("aria-expanded") === "true");
+    d.dispatchEvent(new d.defaultView.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    assert.ok(list.hidden);
+    btn.click();
+    d.body.click();   // a click elsewhere closes it
+    assert.ok(list.hidden);
+    btn.click();
+    d.getElementById("changepw").click();   // choosing an item closes the menu and opens the dialog
+    assert.ok(list.hidden);
     assert.equal(d.getElementById("extra-cards").children.length, 1);
     d.getElementById("changepw").click();
     assert.equal(d.getElementById("pw-dialog").open, true);

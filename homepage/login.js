@@ -339,6 +339,7 @@
     signin.hidden = !!user;
     whoami.hidden = !user;
     who.textContent = user ? user.id : "";
+    if (!user && menuList) setMenu(false);
   }
 
   function setStatus(node, kind) {
@@ -494,6 +495,22 @@
       if (kind === "wrong_current") { pwCurrent.value = ""; pwCurrent.focus(); }
       setPwError(kind, result.outcome && result.outcome.body && result.outcome.body.rules);
     }
+  }
+
+  // The signed-in user's box: icon + name open a small menu (Change password, Sign out).
+  const menuBtn = $("usermenu-btn"), menuList = $("usermenu-list");
+  function setMenu(open) {
+    if (!menuBtn || !menuList) return;
+    menuList.hidden = !open;
+    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  if (menuBtn && menuList) {
+    menuBtn.addEventListener("click", event => { event.stopPropagation(); setMenu(menuList.hidden); });
+    menuList.addEventListener("click", () => setMenu(false));   // after the chosen item has acted
+    document.addEventListener("click", event => { if (!whoami.contains(event.target)) setMenu(false); });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !menuList.hidden) { setMenu(false); menuBtn.focus(); }
+    });
   }
 
   signin.addEventListener("click", openDialog);
