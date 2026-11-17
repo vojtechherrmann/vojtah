@@ -11,7 +11,7 @@ PRIVATE repository and in a database, never here.
 | Path | What |
 |---|---|
 | `homepage/` | the page: `index.html`, `style.css`, `script.js` (wakes the InBody app on click), `login.js` (optional sign-in and self-service password change against the site API), `cimrmani/`, `euforie/` (contact-only pages), `CNAME` |
-| `tests/` | node tests (`node --test tests`) |
+| `tests/` | node tests: `npm install && node --test tests` (jsdom is a dev-only dependency for the DOM smoke test `tests/dom.test.cjs`; the page itself has none) |
 | `.github/workflows/` | `homepage-test.yml` (on push), `homepage-pages.yml` (manual publish) |
 | `.claude/` | Claude Code settings and the git-guard hook |
 

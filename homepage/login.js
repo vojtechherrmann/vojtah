@@ -186,9 +186,6 @@
   const account = document.getElementById("account");
   if (!meta || !account || !dialog || typeof dialog.showModal !== "function" || !window.fetch ||
       !window.AbortController) return;
-  const canChangePassword = !!(changepw && pwDialog && pwForm && pwHint && pwCurrent && pwNew &&
-                               pwRepeat && pwSubmit && pwStatus && pwError && pwUser &&
-                               typeof pwDialog.showModal === "function");   // anything missing: the static page stays as it is
 
   const API = meta.content.replace(/\/+$/, "");
   const $ = id => document.getElementById(id);
@@ -202,6 +199,9 @@
   const pwNew = $("pw-new"), pwRepeat = $("pw-repeat"), pwSubmit = $("pw-submit");
   const pwStatus = $("pw-status"), pwError = $("pw-error");
   const pwFields = [pwCurrent, pwNew, pwRepeat];
+  const canChangePassword = !!(changepw && pwDialog && pwForm && pwHint && pwCurrent && pwNew &&
+                               pwRepeat && pwSubmit && pwStatus && pwError && pwUser &&
+                               typeof pwDialog.showModal === "function");   // anything missing: the static page stays as it is
   let noteTimer = null;
 
   let csrf = null;

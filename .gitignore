@@ -32,3 +32,6 @@ htmlcov/
 
 # Personal health data (real InBody sheets). NEVER commit, upload or send to any API.
 samples/
+
+# Node (dev-only test dependency)
+node_modules/

@@ -1,0 +1,8 @@
+{
+  "name": "vojtah-homepage-tests",
+  "private": true,
+  "description": "Dev-only: jsdom for the DOM smoke test of homepage/login.js. The site itself has no dependencies.",
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  }
+}

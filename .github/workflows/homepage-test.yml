@@ -1,12 +1,14 @@
 name: homepage-test
 
-# Node tests of the public start page (logic of homepage/login.js, static page properties). No
-# dependencies, no network. Runs on every push that touches the page or the tests.
+# Node tests of the public start page (logic of homepage/login.js, static page properties, a jsdom
+# smoke test of its DOM layer). The page itself has no dependencies; jsdom is a dev-only dependency. Runs on every push that touches the page or the tests.
 on:
   push:
     paths:
       - 'homepage/**'
       - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/homepage-test.yml'
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -18,4 +20,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: npm ci --no-audit --no-fund   # jsdom, dev-only (DOM smoke test)
       - run: node --test tests
