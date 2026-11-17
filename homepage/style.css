@@ -51,7 +51,7 @@ main { max-width: 640px; margin: 0 auto; padding: 56px 16px 48px; }
 .foot a { color: inherit; text-underline-offset: 3px; }
 .foot a:hover { color: var(--ink); }
 .warm { display: block; margin-top: 12px; font-size: 14px; color: var(--ink-2); }
-.warm[hidden] { display: none; }
+.warm[hidden], #project[hidden], #p-summary[hidden] { display: none; }
 .waiting { border-color: var(--brand-red); cursor: progress; }
 .waiting .go { color: var(--muted); }
 .waiting .warm::before { content: ""; display: inline-block; width: 11px; height: 11px; margin-right: 8px;
