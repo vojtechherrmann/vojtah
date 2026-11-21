@@ -47,6 +47,27 @@ test("the public AI FOR LIFE card and its work-in-progress page exist", () => {
   assert.ok(page.includes('class="pill public"') && /Work in progress/.test(page));
 });
 
+test("the semi-public SOCCER CALLS card, its page, the public contact only, the screenshot", () => {
+  const html = read("index.html");
+  assert.ok(/<a class="card" href="soccer-calls\/">\s*<span class="pill semi">Semi-public<\/span>\s*<span class="name">SOCCER CALLS<\/span>/.test(html));
+  const page = read("soccer-calls", "index.html");
+  assert.ok(page.includes('<span class="pill semi">Semi-public</span>') && page.includes('<span class="name">SOCCER CALLS</span>'));
+  assert.ok(!/<script/.test(page) && !page.includes("<style") && !page.includes(" style="));
+  // "let me know" is the address the start page already publishes; no other contact appears
+  const mails = page.match(/mailto:[^"]+/g);
+  assert.deepEqual(mails, ["mailto:herrmann.vojtech@gmail.com"]);
+  assert.ok(html.includes('href="mailto:herrmann.vojtech@gmail.com"'));
+  assert.ok(!/tel:|\+\d{3}\s?\d{3}/.test(page));
+  // the providers and the infrastructure behind it are not named on the public page
+  for (const word of ["kalshi", "twilio", "azure", "monorepo", "gsc", "gs_caller", "polymarket"]) {
+    assert.ok(!page.toLowerCase().includes(word) && !html.toLowerCase().includes(word), word);
+  }
+  // the screenshot of the control page (phone numbers blacked out), a click opens it full size
+  assert.ok(/<a class="shot-link" href="call\.png"><img class="shot shot-wide" src="call\.png" alt="[^"]+" width="\d+" height="\d+" loading="lazy"><\/a>/.test(page));
+  assert.ok(fs.existsSync(path.join(HOME, "soccer-calls", "call.png")));
+  assert.ok(!page.includes("TODO"));
+});
+
 test("change password: an item next to Sign out in the user menu and a dialog with the right autocomplete hints", () => {
   const html = read("index.html");
   const menu = /<div class="menu" id="usermenu-list" hidden>[\s\S]*?<\/div>/.exec(html)[0];
@@ -88,7 +109,7 @@ test("change password: the dialog styles live in style.css (no inline style, CSP
 test("every page has the VH favicon (one file), and the file is an SVG", () => {
   for (const [file, href] of [["index.html", "favicon.svg"], ["cimrmani/index.html", "../favicon.svg"],
                               ["euforie/index.html", "../favicon.svg"], ["ai-for-life/index.html", "../favicon.svg"],
-                              ["project/index.html", "../favicon.svg"]]) {
+                              ["project/index.html", "../favicon.svg"], ["soccer-calls/index.html", "../favicon.svg"]]) {
     assert.ok(read(...file.split("/")).includes(`<link rel="icon" type="image/svg+xml" href="${href}">`), file);
   }
   const svg = read("favicon.svg");

@@ -2,7 +2,7 @@
 
 Static pages (`index.html`, `style.css`, one small `script.js`, no external requests except the one described below): one card per project
 with a visibility label (PUBLIC green, SEMI-PUBLIC yellow, ON REQUEST pink; legend at the bottom).
-Today: AI FOR LIFE (public, a work-in-progress page `ai-for-life/`), InBody Aggregator (semi-public, links to `https://inbody.vojtah.cz/`) and two on-request
+Today: AI FOR LIFE (public, a work-in-progress page `ai-for-life/`), SOCCER CALLS (semi-public, `soccer-calls/`: what it is, a contact link and a screenshot of the control page that opens full size), InBody Aggregator (semi-public, links to `https://inbody.vojtah.cz/`) and two on-request
 projects whose pages (`cimrmani/`, `euforie/`) show only a contact link, no content. Descriptions of
 private projects are deliberately not published.
 

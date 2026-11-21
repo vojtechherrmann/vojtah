@@ -41,6 +41,14 @@ main { max-width: 640px; margin: 0 auto; padding: 56px 16px 48px; }
 .pill.private { --tone: #f08a84; }
 .pill.request { --tone: #e879b9; }
 .card.static:hover { border-color: var(--ring); transform: none; }
+/* A detail page's bullet list and its screenshot (soccer-calls/). */
+.card .list { margin: 6px 0 0; padding-left: 1.3em; color: var(--ink-2); }
+.card .list li { margin: 2px 0; }
+.card strong { color: var(--ink); }
+.shot-link { display: block; cursor: zoom-in; }
+.shot.shot-wide { width: 100%; }
+.shot { display: block; width: min(100%, 280px); height: auto; margin: 18px auto 0; border-radius: 12px;
+  border: 1px solid var(--ring); }
 .site a { color: inherit; text-decoration: none; }
 .mail { color: var(--ink); font-weight: 600; text-underline-offset: 3px; }
 .mail:hover { color: var(--brand-red); }
