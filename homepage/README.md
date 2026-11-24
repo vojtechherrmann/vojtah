@@ -2,8 +2,8 @@
 
 Static pages (`index.html`, `style.css`, one small `script.js`, no external requests except the one described below): one card per project
 with a visibility label (PUBLIC green, SEMI-PUBLIC yellow, ON REQUEST pink; legend at the bottom).
-Today: AI FOR LIFE (public, a work-in-progress page `ai-for-life/`), SOCCER CALLS (semi-public, `soccer-calls/`: what it is, a contact link and a screenshot of the control page that opens full size), InBody Aggregator (semi-public, links to `https://inbody.vojtah.cz/`) and two on-request
-projects whose pages (`cimrmani/`, `euforie/`) show only a contact link, no content. Descriptions of
+Today: AI FOR LIFE (public, a work-in-progress page `ai-for-life/`), SOCCER CALLS (semi-public, `soccer-calls/`: what it is, a contact link and a screenshot of the control page that opens full size), InBody Aggregator (semi-public, links to `https://inbody.vojtah.cz/`) and three on-request
+projects: `cimrmani/` and `euforie/` show only a contact link, no content; APP2PDF (TicketSwap) (`app2pdf/`) has a full description and a contact link, but its source code is never published. Descriptions of
 private projects are deliberately not published.
 
 It is **not** part of the web app: the InBody app lives in its own repository (`inbody-aggregator`) on an Azure

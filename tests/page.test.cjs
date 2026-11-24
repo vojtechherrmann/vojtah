@@ -68,6 +68,21 @@ test("the semi-public SOCCER CALLS card, its page, the public contact only, the 
   assert.ok(!page.includes("TODO"));
 });
 
+test("the on-request APP2PDF (TicketSwap) card and its page: the description and the contact, no code and no how-to", () => {
+  const html = read("index.html");
+  assert.ok(/<a class="card" href="app2pdf\/">\s*<span class="pill request">On request<\/span>\s*<span class="name">APP2PDF \(TicketSwap\)<\/span>/.test(html));
+  const page = read("app2pdf", "index.html");
+  assert.ok(page.includes('<span class="pill request">On request</span>') && page.includes('<span class="name">APP2PDF (TicketSwap)</span>'));
+  assert.ok(page.includes('<meta name="robots" content="noindex">'));
+  assert.ok(!/<script/.test(page) && !page.includes("<style") && !page.includes(" style="));
+  // the contact is the only link out: no repository, no download
+  const links = page.match(/<a [^>]*href="[^"]+"/g).map(a => /href="([^"]+)"/.exec(a)[1]);
+  assert.deepEqual(links, ["../", "mailto:herrmann.vojtech@gmail.com", "../"]);
+  assert.ok(page.includes("Ticketmaster"));
+  assert.ok(/this project will never be public/.test(page));
+  assert.ok(/<li>Slavia<\/li>/.test(page));
+});
+
 test("change password: an item next to Sign out in the user menu and a dialog with the right autocomplete hints", () => {
   const html = read("index.html");
   const menu = /<div class="menu" id="usermenu-list" hidden>[\s\S]*?<\/div>/.exec(html)[0];
@@ -109,7 +124,8 @@ test("change password: the dialog styles live in style.css (no inline style, CSP
 test("every page has the VH favicon (one file), and the file is an SVG", () => {
   for (const [file, href] of [["index.html", "favicon.svg"], ["cimrmani/index.html", "../favicon.svg"],
                               ["euforie/index.html", "../favicon.svg"], ["ai-for-life/index.html", "../favicon.svg"],
-                              ["project/index.html", "../favicon.svg"], ["soccer-calls/index.html", "../favicon.svg"]]) {
+                              ["project/index.html", "../favicon.svg"], ["soccer-calls/index.html", "../favicon.svg"],
+                              ["app2pdf/index.html", "../favicon.svg"]]) {
     assert.ok(read(...file.split("/")).includes(`<link rel="icon" type="image/svg+xml" href="${href}">`), file);
   }
   const svg = read("favicon.svg");
