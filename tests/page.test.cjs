@@ -79,6 +79,8 @@ test("the on-request APP2PDF (TicketSwap) card and its page: the description and
   const links = page.match(/<a [^>]*href="[^"]+"/g).map(a => /href="([^"]+)"/.exec(a)[1]);
   assert.deepEqual(links, ["../", "mailto:herrmann.vojtech@gmail.com", "../"]);
   assert.ok(page.includes("Ticketmaster"));
+  // the site says soccer everywhere
+  assert.ok(!/football/i.test(page) && !/football/i.test(html));
   assert.ok(/this project will never be public/.test(page));
   assert.ok(/<li>Slavia<\/li>/.test(page));
 });
